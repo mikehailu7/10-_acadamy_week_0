@@ -4,7 +4,7 @@
 
 ## By Task One
 
-# folder structure 
+folder structure 
 
 ├── .vscode
 │ └── settings.json
@@ -25,6 +25,6 @@
 
 ## Task Two
 
-# Dashboard Development Using Streamlit
+Dashboard Development Using Streamlit
 
 # Author: Mikias Hailu
