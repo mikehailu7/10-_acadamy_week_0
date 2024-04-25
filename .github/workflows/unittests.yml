@@ -3,7 +3,7 @@ name: Unit CI/CD
 on:
   push:
     branches:
-      - task-1
+      - dashboard-dev
 
 jobs:
   build:
