@@ -4,7 +4,7 @@
 
 ## By Task One
 
-folder structure 
+The folder structures are  
 
 ├── .vscode
 │ └── settings.json
@@ -23,8 +23,15 @@ folder structure
 ├── __init__.py
 └── README.md
 
+
 ## Task Two
 
 Dashboard Development Using Streamlit
 
+# make sure you install 
+# pip install jupyter notebook
+# pip install streamlit
+# pip install panadas
+
 # Author: Mikias Hailu
+
