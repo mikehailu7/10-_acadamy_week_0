@@ -1,66 +1,78 @@
-import datetime
-import re
-import pandas as pd
-import matplotlib.pyplot as plt
-import utils
+import os
+import seaborn as sns
 import streamlit as st
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
 
-st.title("Data Insights Dashboard")
 
-selected_option = st.selectbox(label="Choose data:", options=utils.get_list_of_csvs())
+# funciton to fetch data
+def fetch_data(file_name):
+    data = pd.read_csv(file_name)
+    return data
 
-df = utils.fetch_data(f"../data/{selected_option}")
 
-st.title("Data Visualization Dashboard")
-st.markdown(
-    "This dashboard allows you to visualize data with various interactive features."
-)
+# funciton to get list of csvs
+def get_list_of_csvs():
+    current_dir = os.path.dirname(os.path.abspath(__file__))
+    data_dir = os.path.join(current_dir, "../data")
+    return os.listdir(data_dir)
 
-data = utils.clean_data(df)
 
-st.sidebar.header("Customize the Dashboard")
-plot_type = st.sidebar.selectbox(
-    "Select Plot Type", ["Line Plot", "Scatter Plot", "Box Plot", "Histogram"]
-)
+def clean_data(data):
+    data = data.replace([np.inf, -np.inf], np.nan)
 
-x_column = st.sidebar.selectbox("X-Axis", data.columns)
-y_column = st.sidebar.selectbox("Y-Axis", data.columns)
+    if "Timestamp" in data.columns:
+        data["Timestamp"] = pd.to_datetime(data["Timestamp"], errors="coerce")
+        most_common_date = (
+            data["Timestamp"].mode()[0]
+            if not data["Timestamp"].mode().empty
+            else pd.Timestamp.now()
+        )
+        data["Timestamp"] = data["Timestamp"].fillna(most_common_date)
+        data.set_index("Timestamp", drop=False, inplace=True)
 
-if plot_type == "Line Plot":
-    utils.generate_line_plot(data, x_column, y_column, "Line Plot")
+    numeric_columns = data.select_dtypes(include=[np.number]).columns
+    data[numeric_columns] = data[numeric_columns].apply(lambda x: x.fillna(x.median()))
 
-elif plot_type == "Scatter Plot":
-    hue_column = st.sidebar.selectbox("Hue", ["None"] + list(data.columns))
-    hue = None if hue_column == "None" else hue_column
-    utils.generate_scatter_plot(data, x_column, y_column, "Scatter Plot", hue=hue)
+    data.drop_duplicates(inplace=True)
 
-elif plot_type == "Box Plot":
-    utils.generate_box_plot(data, x_column, "Box Plot")
+    return data
 
-elif plot_type == "Histogram":
-    utils.generate_histogram(data, x_column, "Histogram")
 
-st.header("Summary Statistics")
-st.write(utils.get_summary_stats(data))
+def get_summary_stats(data):
+    return data.describe()
 
-st.subheader("Time Series Analysis")
-df["Timestamp"] = pd.to_datetime(df["Timestamp"])
-df.set_index("Timestamp", inplace=True)
-plt.figure(figsize=(12, 8))
-plt.subplot(2, 2, 1)
-plt.plot(df["GHI"], color="blue")
-plt.title("Global Horizontal Irradiance (GHI)")
-plt.xlabel("Timestamp")
-plt.ylabel("GHI")
 
-st.pyplot(plt)
+def generate_line_plot(data, x, y, title):
+    fig, ax = plt.subplots(figsize=(12, 6))
+    sns.lineplot(data=data, x=x, y=y, ax=ax)
+    ax.set_title(title)
+    ax.set_xlabel(x)
+    ax.set_ylabel(y)
+    st.pyplot(fig)
 
-st.subheader("Data Quality Check")
-category = st.selectbox("Select Category", ["Missing values", "Negative values"])
-filtered_data = None
-if category == "Missing values":
-    filtered_data = df.isnull().sum()
-if category == "Negative values":
-    filtered_data = df[(df["GHI"] < 0) | (df["DNI"] < 0) | (df["DHI"] < 0)]
 
-st.write(filtered_data)
+def generate_scatter_plot(data, x, y, title, hue=None):
+    fig, ax = plt.subplots(figsize=(12, 6))
+    sns.scatterplot(data=data, x=x, y=y, hue=hue, ax=ax)
+    ax.set_title(title)
+    ax.set_xlabel(x)
+    ax.set_ylabel(y)
+    st.pyplot(fig)
+
+
+def generate_histogram(data, column, title):
+    fig, ax = plt.subplots(figsize=(12, 6))
+    sns.histplot(data[column], kde=True, ax=ax)
+    ax.set_title(title)
+    ax.set_xlabel("Value")
+    ax.set_ylabel("Count")
+    st.pyplot(fig)
+
+
+def generate_box_plot(data, column, title):
+    fig, ax = plt.subplots(figsize=(12, 6))
+    sns.boxplot(data=data, x=column, ax=ax)
+    ax.set_title(title)
+    st.pyplot(fig)
