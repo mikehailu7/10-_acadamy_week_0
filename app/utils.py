@@ -1,20 +1,22 @@
 import os
 import pandas as pd
-import numpy as np
-import matplotlib.pyplot as plt
 import seaborn as sns
 import streamlit as st
+import numpy as np
+import matplotlib.pyplot as plt
 
 
-# function to fetch data
+# function that will fetch data
 def fetch_data(file_name):
     data = pd.read_csv(file_name)
     return data
 
 
-# function to get list of csvs
+# function that will get list of csvs
 def get_list_of_csvs():
-    return os.listdir("../data")
+    current_dir = os.path.dirname(os.path.abspath(__file__))
+    data_dir = os.path.join(current_dir, "../data")
+    return os.listdir(data_dir)
 
 
 def clean_data(data):
@@ -60,17 +62,17 @@ def generate_scatter_plot(data, x, y, title, hue=None):
     st.pyplot(fig)
 
 
+def generate_box_plot(data, column, title):
+    fig, ax = plt.subplots(figsize=(12, 6))
+    sns.boxplot(data=data, x=column, ax=ax)
+    ax.set_title(title)
+    st.pyplot(fig)
+
+
 def generate_histogram(data, column, title):
     fig, ax = plt.subplots(figsize=(12, 6))
     sns.histplot(data[column], kde=True, ax=ax)
     ax.set_title(title)
     ax.set_xlabel("Value")
     ax.set_ylabel("Count")
-    st.pyplot(fig)
-
-
-def generate_box_plot(data, column, title):
-    fig, ax = plt.subplots(figsize=(12, 6))
-    sns.boxplot(data=data, x=column, ax=ax)
-    ax.set_title(title)
     st.pyplot(fig)
