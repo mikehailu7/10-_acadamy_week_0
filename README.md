@@ -1,6 +1,6 @@
-## 10 Acadamy
+## 10 Acadamy  
 
-## WEEK 0
+## WEEK 0 challenge
 
 ## By Task One
 
